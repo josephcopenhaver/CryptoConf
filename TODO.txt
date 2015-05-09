@@ -1,6 +1,6 @@
-1. break the cli into individual components
+#1. break the cli into individual components
 2. do not load the entire config file into memory at once
-3. support specifying more than one config file to obsfucate
+#3. support specifying more than one config file to obsfucate
 4. support recursively searching for additional .cryptoconf directives deeper in the project path
 5. write entry point for standard runtime to always decrypt the configs when in a production environment
 6. write a crap ton of tests

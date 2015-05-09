@@ -21,16 +21,16 @@ def main():
 	)
 	parser.add_argument(
 		"cmd",
-		choices=("create_keys", "encrypt", "decrypt"),
-		default="create_keys",
+		choices=("create-keys", "encrypt", "decrypt"),
+		default="create-keys",
 		help=""
-		"create_keys: create dev/prod key pairs\n"
+		"create-keys: create dev/prod key pairs\n"
 		"encrypt: obsfucate raw config files\n"
 		"decrypt: recreate raw config files"
 	)
 	args = parser.parse_args()
 	cmd = args.cmd
-	if cmd == "create_keys":
+	if cmd == "create-keys":
 		create_keys()
 	elif cmd == "encrypt":
 		encrypt()
