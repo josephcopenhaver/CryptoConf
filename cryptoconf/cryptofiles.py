@@ -42,18 +42,13 @@ def encrypt(settings_fpath=None):
 				wh.write(signature)
 
 
-def _decrypt_to(ckeys, raw_fpath, wh):
+def decrypt_single(env_pkey, raw_fpath, wh):
+	ckeys = read_env_keys(env_pkey)
 	with open(_crypto_fpath(raw_fpath), "rb") as rh:
 		size = pickle.load(rh)
 		raw = ckeys.prod.decrypt(rh.read(size))
 		wh.write(raw)
 		signature = rh.read()
-		return raw, signature
-
-
-def decrypt_single(env_pkey, raw_fpath, wh):
-	ckeys = read_env_keys(env_pkey)
-	raw, signature = _decrypt_to(ckeys, raw_fpath, wh)
 	ckeys.dev.verify(signature, raw)
 
 
@@ -71,3 +66,4 @@ def decrypt(settings_fpath=None):
 			if path.isfile(tmpfpath):
 				unlink(tmpfpath)
 			raise
+
