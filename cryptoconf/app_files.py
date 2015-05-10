@@ -16,8 +16,7 @@ _threading.file_store = None
 def _fill_file_store():
 	global _g_file_store
 
-	settings = Settings()
-	for setting in settings:
+	for setting in Settings():
 		fpath = path.abspath(setting.raw_fpath)
 		assert _g_file_store.get(fpath, None) is None
 		_g_file_store[fpath] = setting.pkey
@@ -31,11 +30,16 @@ def _init_threading():
 			_threading.file_store = _g_file_store
 			return _g_file_store
 		_g_file_store = {}
+		_threading.file_store = _g_file_store
 		_fill_file_store()
 		return _g_file_store
 
 
 def get_file_contents(fpath):
+	"""
+	Read from a cryptographically secure config file
+	returns bytes in the raw file
+	"""
 	abs_fpath = path.abspath(fpath)
 	file_store = _threading.file_store
 	if file_store is None:
@@ -46,8 +50,8 @@ def get_file_contents(fpath):
 	if pkey is None:
 		return None
 
-	file_io_bytes = BytesIO()
-	decrypt_single(pkey, abs_fpath, file_io_bytes)
-	file_io_bytes.seek(0)
+	bytes_buffer = BytesIO()
+	decrypt_single(pkey, abs_fpath, bytes_buffer)
+	bytes_buffer.seek(0)
 
-	return file_io_bytes
+	return bytes_buffer.read()
