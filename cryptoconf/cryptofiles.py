@@ -42,27 +42,41 @@ def encrypt(settings_fpath=None):
 				wh.write(signature)
 
 
+def read_to(ckeys, raw_fpath, wh):
+	with open(crypto_fpath(raw_fpath), "rb") as rh:
+		size = pickle.load(rh)
+		raw = ckeys.prod.decrypt(rh.read(size))
+		wh.write(raw)
+		signature = rh.read()
+		return raw, signature
+
+
+def decrypt_single(env_pkey, raw_fpath, fp_out=None):
+	ckeys = read_env_keys(env_pkey)
+	if fp_out is not None:
+		tmpfpath = None
+	else:
+		tmpfpath = crypto_tempfpath(raw_fpath)
+
+	try:
+		if tmpfpath is not None:
+			with open(tmpfpath, "wb") as wh:
+				raw, signature = read_to(ckeys, raw_fpath, wh)
+		else:
+			raw, signature = read_to(ckeys, raw_fpath, fp_out)
+			
+
+		ckeys.dev.verify(signature, raw)
+		if tmpfpath is not None:
+			shutil.move(tmpfpath, raw_fpath)
+	except:
+		if tmpfpath is not None and path.isfile(tmpfpath):
+			unlink(tmpfpath)
+		raise
+
+
 def decrypt(settings_fpath=None):
 	"""
 	"""
 	for setting in Settings(settings_fpath):
-		raw_fpath = setting.raw_fpath
-
-		ckeys = read_env_keys(setting.pkey)
-		del setting
-		tmpfpath = crypto_tempfpath(raw_fpath)
-
-		try:
-			with open(tmpfpath, "wb") as wh:
-				with open(crypto_fpath(raw_fpath), "rb") as rh:
-					size = pickle.load(rh)
-					raw = ckeys.prod.decrypt(rh.read(size))
-					wh.write(raw)
-					signature = rh.read()
-
-			ckeys.dev.verify(signature, raw)
-			shutil.move(tmpfpath, raw_fpath)
-		except:
-			if path.isfile(tmpfpath):
-				unlink(tmpfpath)
-			raise
+		decrypt_single(setting.pkey, setting.raw_fpath)
