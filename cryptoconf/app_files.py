@@ -4,7 +4,7 @@ from io import BytesIO
 from os import path
 
 from cryptoconf.cryptofiles import decrypt_single
-from cryptoconf.settings import Settings
+from cryptoconf.settings import settings
 
 
 _g_file_store = None
@@ -22,7 +22,7 @@ def _fill_file_store():
 	pdir = path.abspath(pdir)
 	pdir = path.normpath(pdir)
 
-	for setting in Settings(pdir):
+	for setting in settings(pdir):
 		fpath = setting.raw_fpath
 		if not path.isabs(fpath):
 			path.join(pdir, fpath)

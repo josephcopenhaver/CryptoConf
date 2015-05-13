@@ -4,7 +4,7 @@ from os import path, unlink
 
 from pyelliptic.ecc import ECC
 
-from cryptoconf.settings import Settings
+from cryptoconf.settings import settings
 from cryptoconf.keygen import read_env_keys
 
 
@@ -32,7 +32,7 @@ def encrypt(settings_fpath):
 	"""
 	"""
 	pdir = _crypto_fpath_pdir(settings_fpath)
-	for setting in Settings(settings_fpath):
+	for setting in settings(settings_fpath):
 		raw_fpath = setting.raw_fpath
 		if not path.isabs(raw_fpath):
 			raw_fpath = path.join(pdir, raw_fpath)
@@ -65,7 +65,7 @@ def decrypt(settings_fpath):
 	"""
 	"""
 	pdir = _crypto_fpath_pdir(settings_fpath)
-	for setting in Settings(settings_fpath):
+	for setting in settings(settings_fpath):
 		raw_fpath = setting.raw_fpath
 		if not path.isabs(raw_fpath):
 			raw_fpath = path.join(pdir, raw_fpath)
