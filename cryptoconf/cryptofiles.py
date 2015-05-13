@@ -11,6 +11,12 @@ from cryptoconf.keygen import read_env_keys
 CRYPT_EXTENSION = "cryptoconf"
 
 
+def _crypto_fpath_pdir(fpath):
+	if path.isdir(fpath):
+		return path.abspath(fpath)
+	return path.abspath(path.dirname(fpath))
+
+
 def _crypto_fpath(raw_fpath):
 	return "{}.{}".format(raw_fpath, CRYPT_EXTENSION)
 
@@ -22,11 +28,14 @@ def _crypto_tempfpath(raw_fpath):
 	)
 
 
-def encrypt(settings_fpath=None):
+def encrypt(settings_fpath):
 	"""
 	"""
+	pdir = _crypto_fpath_pdir(settings_fpath)
 	for setting in Settings(settings_fpath):
 		raw_fpath = setting.raw_fpath
+		if not path.isabs(raw_fpath):
+			raw_fpath = path.join(pdir, raw_fpath)
 
 		ckeys = read_env_keys(setting.pkey)
 		del setting
@@ -52,11 +61,14 @@ def decrypt_single(env_pkey, raw_fpath, wh):
 	ckeys.dev.verify(signature, raw)
 
 
-def decrypt(settings_fpath=None):
+def decrypt(settings_fpath):
 	"""
 	"""
+	pdir = _crypto_fpath_pdir(settings_fpath)
 	for setting in Settings(settings_fpath):
 		raw_fpath = setting.raw_fpath
+		if not path.isabs(raw_fpath):
+			raw_fpath = path.join(pdir, raw_fpath)
 		tmpfpath = _crypto_tempfpath(raw_fpath)
 		try:
 			with open(tmpfpath, "wb") as wh:

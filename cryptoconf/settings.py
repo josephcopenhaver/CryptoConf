@@ -1,7 +1,8 @@
+from os import path
 from yaml import load
 
 
-DEFAULT_SETTINGS_FPATH = "./.cryptoconf"
+DEFAULT_SETTINGS_FNAME = ".cryptoconf"
 
 
 class Setting():
@@ -21,9 +22,9 @@ class Settings():
 		"_yaml",
 	)
 
-	def __init__(self, fpath=None):
-		if fpath is None:
-			fpath = DEFAULT_SETTINGS_FPATH
+	def __init__(self, fpath):
+		if path.isdir(fpath):
+			fpath = path.join(fpath, DEFAULT_SETTINGS_FNAME)
 		with open(fpath, "r") as ch:
 			self._yaml = load(ch)
 
