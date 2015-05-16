@@ -39,7 +39,7 @@ def _init_threading():
 		for setting in settings(pdir):
 			fpath = setting.raw_fpath
 			if not path.isabs(fpath):
-				path.join(pdir, fpath)
+				fpath = path.join(pdir, fpath)
 			fpath = path.abspath(fpath)
 			fpath = path.normpath(fpath)
 			assert file_store.get(fpath, None) is None
