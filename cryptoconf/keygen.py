@@ -11,11 +11,16 @@ DEFAULT_CURVE_TYPE = 'sect571r1'
 
 class Keys(object):
 
-	__slots__ = ("prod", "dev")
+	__slots__ = (
+		"prod",
+		"dev",
+		"can_encrypt",
+	)
 
 	def __init__(self, prod_privkey, prod_pubkey, dev_privkey, dev_pubkey):
 		self.prod = ECC(curve=DEFAULT_CURVE_TYPE, privkey=prod_privkey, pubkey=prod_pubkey)
 		self.dev = ECC(curve=DEFAULT_CURVE_TYPE, privkey=dev_privkey, pubkey=dev_pubkey)
+		self.can_encrypt = dev_privkey is not None
 
 
 def generate_keys():

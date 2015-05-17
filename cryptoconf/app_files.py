@@ -3,7 +3,7 @@ from threading import local, Lock
 from io import BytesIO
 from os import path
 
-from cryptoconf.cryptofiles import decrypt_single
+from cryptoconf.cryptofiles import read_env_keys, crypto_fpath, decrypt_single
 from cryptoconf.settings import settings
 
 
@@ -43,7 +43,7 @@ def _init_threading():
 			fpath = path.abspath(fpath)
 			fpath = path.normpath(fpath)
 			assert file_store.get(fpath, None) is None
-			file_store[fpath] = setting.pkey
+			file_store[fpath] = (setting.pkey, setting.dev_policy)
 			del fpath
 
 		_g_file_store = file_store
@@ -67,13 +67,29 @@ def get_file_contents(fpath):
 	fpath = path.abspath(fpath)
 	fpath = path.normpath(fpath)
 
-	pkey = file_store.get(fpath, None)
+	pkey_devstrat = file_store.get(fpath, None)
 	
-	if pkey is None:
+	if pkey_devstrat is None:
 		return None
 
+	devstrat = pkey_devstrat[1]
+
+	ckeys = read_env_keys(pkey_devstrat[0])
+
+	del pkey_devstrat
+
+	if (
+		ckeys.can_create and
+		(
+			(devstrat == DevPolicy.PREFER_RAW and path.isfile(fpath))
+			|| devstrat == DevPolicy.NONE and not path.isfile(crypto_fpath(fpath))
+		)
+	):
+		with open(fpath, "rb") as fh:
+			return fh.read()
+
 	bytes_buffer = BytesIO()
-	decrypt_single(pkey, fpath, bytes_buffer)
+	decrypt_single(ckeys, fpath, bytes_buffer)
 	bytes_buffer.seek(0)
 
 	return bytes_buffer.read()

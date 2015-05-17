@@ -12,12 +12,12 @@ CRYPT_EXTENSION = "cryptoconf"
 
 
 def _crypto_fpath_pdir(fpath):
-	if path.isdir(fpath):
-		return path.abspath(fpath)
-	return path.abspath(path.dirname(fpath))
+	if not path.isdir(fpath):
+		fpath = path.dirname(fpath)
+	return path.abspath(fpath)
 
 
-def _crypto_fpath(raw_fpath):
+def crypto_fpath(raw_fpath):
 	return "{}.{}".format(raw_fpath, CRYPT_EXTENSION)
 
 
@@ -43,7 +43,7 @@ def encrypt(settings_fpath):
 		with open(raw_fpath, "rb") as rh:
 			raw = rh.read()
 			signature = ckeys.dev.sign(raw)
-			with open(_crypto_fpath(raw_fpath), "wb") as wh:
+			with open(crypto_fpath(raw_fpath), "wb") as wh:
 				cdata = ECC.encrypt(raw, ckeys.prod.get_pubkey())
 				pickle.dump(len(cdata), wh, pickle.HIGHEST_PROTOCOL)
 				wh.flush()
@@ -51,9 +51,8 @@ def encrypt(settings_fpath):
 				wh.write(signature)
 
 
-def decrypt_single(env_pkey, raw_fpath, wh):
-	ckeys = read_env_keys(env_pkey)
-	with open(_crypto_fpath(raw_fpath), "rb") as rh:
+def decrypt_single(ckeys, raw_fpath, wh):
+	with open(crypto_fpath(raw_fpath), "rb") as rh:
 		size = pickle.load(rh)
 		raw = ckeys.prod.decrypt(rh.read(size))
 		wh.write(raw)
@@ -72,7 +71,8 @@ def decrypt(settings_fpath):
 		tmpfpath = _crypto_tempfpath(raw_fpath)
 		try:
 			with open(tmpfpath, "wb") as wh:
-				decrypt_single(setting.pkey, raw_fpath, wh)
+				ckeys = read_env_keys(setting.pkey)
+				decrypt_single(ckeys, raw_fpath, wh)
 			shutil.move(tmpfpath, raw_fpath)
 		except:
 			if path.isfile(tmpfpath):
