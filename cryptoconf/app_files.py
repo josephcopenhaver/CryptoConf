@@ -43,8 +43,7 @@ def _init_threading():
 			fpath = path.abspath(fpath)
 			fpath = path.normpath(fpath)
 			assert file_store.get(fpath, None) is None
-			file_store[fpath] = (setting.pkey, setting.dev_policy)
-			del fpath
+			file_store[fpath] = setting
 
 		_g_file_store = file_store
 		_g_pdir = pdir
@@ -67,26 +66,26 @@ def get_file_contents(fpath):
 	fpath = path.abspath(fpath)
 	fpath = path.normpath(fpath)
 
-	pkey_devstrat = file_store.get(fpath, None)
+	setting = file_store.get(fpath, None)
 	
-	if pkey_devstrat is None:
+	if setting is None:
 		return None
 
-	devstrat = pkey_devstrat[1]
-
-	ckeys = read_env_keys(pkey_devstrat[0])
-
-	del pkey_devstrat
+	ckeys = read_env_keys(setting.pkey)
 
 	if (
 		ckeys.can_create and
 		(
-			(devstrat == DevPolicy.PREFER_RAW and path.isfile(fpath))
-			|| devstrat == DevPolicy.NONE and not path.isfile(crypto_fpath(fpath))
+			(setting.dev_policy == DevPolicy.PREFER_RAW and path.isfile(fpath))
+			|| setting.dev_policy == DevPolicy.NONE and not path.isfile(crypto_fpath(fpath))
 		)
 	):
+		del ckeys
+		del setting
 		with open(fpath, "rb") as fh:
 			return fh.read()
+
+	del setting
 
 	bytes_buffer = BytesIO()
 	decrypt_single(ckeys, fpath, bytes_buffer)
