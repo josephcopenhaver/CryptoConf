@@ -77,7 +77,7 @@ def get_file_contents(fpath):
 		ckeys.can_create and
 		(
 			(setting.dev_policy == DevPolicy.PREFER_RAW and path.isfile(fpath))
-			|| setting.dev_policy == DevPolicy.NONE and not path.isfile(crypto_fpath(fpath))
+			|| (setting.dev_policy == DevPolicy.NONE and not path.isfile(crypto_fpath(fpath)))
 		)
 	):
 		del ckeys
