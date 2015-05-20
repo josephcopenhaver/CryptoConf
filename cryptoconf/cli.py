@@ -39,7 +39,8 @@ def main():
 		'-f',
 		action='store_true',
 		default=False,
-		help="overwrite existing destination files for an encryption/decryption action"
+		help="ignore previously existing destination files or missing source files for an "
+			"encryption/decryption action"
 	)
 	parser.add_argument(
 		'-p',
