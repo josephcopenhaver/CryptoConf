@@ -43,6 +43,7 @@ def _before_bulk_crypt_verify(settings_fpath, force, encrypt_flag):
 
 		if not path.isabs(src_fpath):
 			src_fpath = path.join(pdir, src_fpath)
+
 		src_fpath = path.abspath(src_fpath)
 		dst_fpath = crypto_fpath(src_fpath)
 		dst_fpath = path.abspath(dst_fpath)
@@ -50,7 +51,10 @@ def _before_bulk_crypt_verify(settings_fpath, force, encrypt_flag):
 		if not encrypt_flag:
 			src_fpath, dst_fpath = dst_fpath, src_fpath
 
-		if not path.isfile(src_fpath):
+		if (
+			not path.isfile(src_fpath)
+			and (not force or path.exists(src_fpath))
+		):
 			raise Exception("{} not possible, file does not exist: {}".format(
 				action,
 				src_fpath
@@ -96,12 +100,17 @@ def encrypt(settings_fpath, force, preserve_src):
 
 	for setting in settings(settings_fpath):
 		raw_fpath = setting.raw_fpath
+
 		if not path.isabs(raw_fpath):
 			raw_fpath = path.join(pdir, raw_fpath)
+
+		if force and not path.exists(raw_fpath):
+			continue
 
 		if setting.pkey != last_pkey:
 			last_pkey = setting.pkey
 			ckeys = read_env_keys(last_pkey)
+
 		del setting
 
 		with open(raw_fpath, "rb") as rh:
@@ -138,14 +147,22 @@ def decrypt(settings_fpath, force, preserve_src):
 
 	for setting in settings(settings_fpath):
 		raw_fpath = setting.raw_fpath
+
 		if not path.isabs(raw_fpath):
 			raw_fpath = path.join(pdir, raw_fpath)
+
+		if force and not path.exists(crypto_fpath(raw_fpath)):
+			continue
+
+		if setting.pkey != last_pkey:
+			last_pkey = setting.pkey
+			ckeys = read_env_keys(last_pkey)
+
+		del setting
+
 		tmpfpath = _crypto_tempfpath(raw_fpath)
 		try:
 			with open(tmpfpath, "wb") as wh:
-				if setting.pkey != last_pkey:
-					last_pkey = setting.pkey
-					ckeys = read_env_keys(last_pkey)
 				cfpath = decrypt_single(ckeys, raw_fpath, wh)
 			shutil.move(tmpfpath, raw_fpath)
 		except:
