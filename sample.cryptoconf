@@ -1,6 +1,7 @@
 # sample .cryptoconf file
 ---
   - 
+    dev_policy: PREFER_RAW
     env_pkey: MY_SECRET_ENV_KEY
     raw_files: 
       - raw.txt
