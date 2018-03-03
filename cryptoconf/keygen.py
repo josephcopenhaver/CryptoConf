@@ -6,7 +6,7 @@ from base64 import b64encode, b64decode
 from pyelliptic.ecc import ECC
 
 
-DEFAULT_CURVE_TYPE = 'sect571r1'
+DEFAULT_CURVE_TYPE = 'secp521r1'
 
 
 class Keys(object):
